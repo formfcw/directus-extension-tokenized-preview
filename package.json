@@ -1,0 +1,42 @@
+{
+    "name": "directus-extension-tokenized-preview",
+    "version": "1.0.0",
+    "description": "An endpoint that adds an active auth token to your preview URL",
+    "license": "GPL-3.0",
+    "author": "formfcw",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/formfcw/directus-extension-tokenized-preview"
+    },
+    "icon": "extension",
+    "keywords": [
+        "directus",
+        "directus-extension",
+        "directus-custom-endpoint",
+        "tokenized-preview",
+        "auth-token",
+        "preview-url"
+    ],
+    "type": "module",
+    "directus:extension": {
+        "type": "endpoint",
+        "path": "dist/index.js",
+        "source": "src/index.ts",
+        "host": "^10.1.11"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build-publish": "directus-extension build && npm publish",
+        "build": "directus-extension build",
+        "dev": "directus-extension build -w --no-minify",
+        "link": "directus-extension link"
+    },
+    "devDependencies": {
+        "@directus/errors": "^0.0.2",
+        "@directus/extensions-sdk": "10.1.11",
+        "@types/node": "^20.8.7",
+        "typescript": "^5.2.2"
+    }
+}
