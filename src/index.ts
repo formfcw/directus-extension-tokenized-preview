@@ -18,43 +18,47 @@ const TokenizedPreviewError = createError(
 
 export default {
     id: endpoint,
-    handler: (router) => {
+    handler: (router, context) => {
+        const { services, getSchema } = context;
+        const { AuthenticationService } = services;
+
         router.get("*", async (req: any, res: any, next: (x: any) => void) => {
-            const { accessToken } = await _refreshAuth(req, res);
-            if (!accessToken) return next(new TokenizedPreviewError());
+            try {
+                const authService = new AuthenticationService({
+                    schema: await getSchema(),
+                    accountability: req.accountability,
+                });
 
-            const originalUrl = req.originalUrl.replace(
-                new RegExp(`^/${endpoint}/`),
-                ""
-            );
+                const data = await authService.refresh(
+                    req.cookies.directus_refresh_token
+                );
 
-            const url = new URL(originalUrl, baseUrl);
-            url.searchParams.append(tokenKey, accessToken);
+                if (data?.refreshToken) {
+                    res.cookie("directus_refresh_token", data.refreshToken, {
+                        maxAge: data.expires,
+                        httpOnly: true,
+                    });
+                }
 
-            // For debugging
-            // res.send({ originalUrl, url, accessToken });
+                if (!data?.accessToken)
+                    return next(new TokenizedPreviewError());
 
-            res.redirect(url);
+                const originalUrl = req.originalUrl.replace(
+                    new RegExp(`^/${endpoint}/`),
+                    ""
+                );
+
+                const url = new URL(originalUrl, baseUrl);
+                url.searchParams.append(tokenKey, data.accessToken);
+
+                // For debugging
+                // res.send({ originalUrl, url, accessToken: data.accessToken });
+
+                res.redirect(url);
+            } catch (error: any) {
+                res.status(500);
+                res.send(error.message);
+            }
         });
     },
 } as EndpointConfig;
-
-async function _refreshAuth(req: any, res: any) {
-    const resp = await fetch(`${directusUrl}/auth/refresh`, {
-        method: "post",
-        body: JSON.stringify({
-            refresh_token: req.cookies.directus_refresh_token,
-        }),
-        headers: { "Content-Type": "application/json" },
-    });
-    const json = await resp.json();
-
-    if (json?.data?.refresh_token) {
-        res.cookie("directus_refresh_token", json.data.refresh_token, {
-            maxAge: json.data.expires,
-            httpOnly: true,
-        });
-    }
-
-    return { accessToken: json?.data?.access_token };
-}
