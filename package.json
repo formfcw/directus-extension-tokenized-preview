@@ -1,6 +1,6 @@
 {
     "name": "directus-extension-tokenized-preview",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "An endpoint that adds an active auth token to your preview URL",
     "license": "GPL-3.0",
     "author": {
