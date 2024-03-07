@@ -24,24 +24,8 @@ export default {
 
         router.get("*", async (req: any, res: any, next: (x: any) => void) => {
             try {
-                const authService = new AuthenticationService({
-                    schema: await getSchema(),
-                    accountability: req.accountability,
-                });
-
-                const data = await authService.refresh(
-                    req.cookies.directus_refresh_token
-                );
-
-                if (data?.refreshToken) {
-                    res.cookie("directus_refresh_token", data.refreshToken, {
-                        maxAge: data.expires,
-                        httpOnly: true,
-                    });
-                }
-
-                if (!data?.accessToken)
-                    return next(new TokenizedPreviewError());
+                const accessToken = await getToken();
+                if (!accessToken) return next(new TokenizedPreviewError());
 
                 const originalUrl = req.originalUrl.replace(
                     new RegExp(`^/${endpoint}/`),
@@ -49,15 +33,46 @@ export default {
                 );
 
                 const url = new URL(originalUrl, baseUrl);
-                url.searchParams.append(tokenKey, data.accessToken);
+                url.searchParams.append(tokenKey, accessToken);
 
                 // For debugging
-                // res.send({ originalUrl, url, accessToken: data.accessToken });
+                // res.send({ originalUrl, url, accessToken });
 
                 res.redirect(url);
             } catch (error: any) {
                 res.status(500);
                 res.send(error.message);
+            }
+
+            async function getToken() {
+                if (req.cookies.directus_session_token)
+                    return req.cookies.directus_session_token;
+
+                if (req.cookies.directus_refresh_token) {
+                    const authService = new AuthenticationService({
+                        schema: await getSchema(),
+                        accountability: req.accountability,
+                    });
+
+                    const data = await authService.refresh(
+                        req.cookies.directus_refresh_token
+                    );
+
+                    if (data?.refreshToken) {
+                        res.cookie(
+                            "directus_refresh_token",
+                            data.refreshToken,
+                            {
+                                maxAge: data.expires,
+                                httpOnly: true,
+                            }
+                        );
+                    }
+
+                    return data?.accessToken;
+                }
+
+                return false;
             }
         });
     },
