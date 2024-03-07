@@ -1,17 +1,11 @@
 # Tokenized Preview Endpoint for Directus
 
-[![NPM version](https://img.shields.io/npm/v/directus-extension-tokenized-preview)](https://www.npmjs.com/package/directus-extension-tokenized-preview)
-
 An endpoint that adds an active auth token to your preview URL. The auth token, which has a limited TTL, allows you to to preview content that is not publicly available through the API.
 
-```sh
-# Install via npm
-npm install directus-extension-tokenized-preview
-# Install via yarn
-yarn add directus-extension-tokenized-preview
-# Install via pnpm
-pnpm add directus-extension-tokenized-preview
-```
+## Installation
+
+-   [Official Guide](https://docs.directus.io/extensions/installing-extensions.html)
+-   [NPM Package](https://www.npmjs.com/package/directus-extension-tokenized-preview)
 
 ## Usage
 
@@ -19,13 +13,13 @@ Prefix the `Preview URL` of your data model collection with `/preview/`, like:
 
 `/preview/http://localhost:3000/posts/{{slug}}?preview=true`
 
-![](docs/preview-url.png)
+![](https://raw.githubusercontent.com/formfcw/directus-extension-tokenized-preview/main/docs/preview-url.png)
 
 Or if you set `TOKENIZED_PREVIEW_BASE_URL` (see below), you can achieve the same result without adding the base URL, like:
 
 `/preview/posts/{{slug}}?preview=true`
 
-![](docs/preview-relative-url.png)
+![](https://raw.githubusercontent.com/formfcw/directus-extension-tokenized-preview/main/docs/preview-relative-url.png)
 
 ### Result:
 
