@@ -9,6 +9,10 @@ const baseUrl =
     process.env.PROJECT_URL ||
     directusUrl;
 const tokenKey = process.env.TOKENIZED_PREVIEW_TOKEN_KEY || "token";
+const refreshTokenCookieName =
+    process.env.REFRESH_TOKEN_COOKIE_NAME || "directus_refresh_token";
+const sessionCookieName =
+    process.env.SESSION_COOKIE_NAME || "directus_session_token";
 
 const TokenizedPreviewError = createError(
     "TOKENIZED_PREVIEW_ERROR",
@@ -45,28 +49,24 @@ export default {
             }
 
             async function getToken() {
-                if (req.cookies.directus_session_token)
-                    return req.cookies.directus_session_token;
+                if (req.cookies[sessionCookieName])
+                    return req.cookies[sessionCookieName];
 
-                if (req.cookies.directus_refresh_token) {
+                if (req.cookies[refreshTokenCookieName]) {
                     const authService = new AuthenticationService({
                         schema: await getSchema(),
                         accountability: req.accountability,
                     });
 
                     const data = await authService.refresh(
-                        req.cookies.directus_refresh_token
+                        req.cookies[refreshTokenCookieName]
                     );
 
                     if (data?.refreshToken) {
-                        res.cookie(
-                            "directus_refresh_token",
-                            data.refreshToken,
-                            {
-                                maxAge: data.expires,
-                                httpOnly: true,
-                            }
-                        );
+                        res.cookie(refreshTokenCookieName, data.refreshToken, {
+                            maxAge: data.expires,
+                            httpOnly: true,
+                        });
                     }
 
                     return data?.accessToken;
